@@ -1,0 +1,75 @@
+[gd_scene load_steps=7 format=4 uid="uid://dvwuid4ekthrr"]
+
+[ext_resource type="Texture2D" uid="uid://0lt8gjqiqjwj" path="res://Vector.png" id="1_glv2v"]
+[ext_resource type="TileSet" uid="uid://bjbdqq1pu6qti" path="res://MainSet.tres" id="2_r0du0"]
+[ext_resource type="Script" uid="uid://dlwcai6eh5ioj" path="res://Scripts/TilesPallette.cs" id="4_cm0pq"]
+[ext_resource type="Script" uid="uid://chesmuep3rby3" path="res://Scripts/TilesHover.cs" id="5_fos0i"]
+
+[sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_cm0pq"]
+texture = ExtResource("1_glv2v")
+texture_region_size = Vector2i(100, 87)
+1:0/next_alternative_id = 2
+1:0/0 = 0
+1:0/0/modulate = Color(0, 0, 0, 0.243137)
+
+[sub_resource type="TileSet" id="TileSet_fos0i"]
+tile_shape = 3
+tile_offset_axis = 1
+tile_size = Vector2i(98, 84)
+sources/0 = SubResource("TileSetAtlasSource_cm0pq")
+
+[node name="Node2D" type="Node2D"]
+
+[node name="Camera2D" type="Camera2D" parent="."]
+position = Vector2(38, 21)
+
+[node name="Control" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="ColorRect" type="ColorRect" parent="Control"]
+z_index = -70
+custom_minimum_size = Vector2(0.06, -0.025)
+layout_mode = 0
+offset_left = -536.0
+offset_top = -306.0
+offset_right = 618.0
+offset_bottom = 349.0
+color = Color(0.847474, 0.847474, 0.847474, 1)
+
+[node name="ColorRect2" type="ColorRect" parent="Control"]
+z_index = -70
+layout_mode = 0
+offset_left = -548.0
+offset_top = -364.0
+offset_right = -333.0
+offset_bottom = 431.0
+color = Color(0.703932, 0.712056, 0.734352, 1)
+
+[node name="Canvas" type="Node2D" parent="."]
+
+[node name="Line2D" type="Line2D" parent="Canvas"]
+
+[node name="MainLayer" type="TileMapLayer" parent="Canvas"]
+tile_map_data = PackedByteArray("AAD9//3/AAAAAAAAAAD9//7/AAAAAAAAAAD9////AAAAAAAAAAD9/wAAAAAAAAAAAAD9/wEAAAAAAAAAAAD9/wIAAAAAAAAAAAD+//7/AAAAAAAAAAD+////AAAAAAAAAAD+/wAAAAAAAAAAAAD+/wEAAAAAAAAAAAD+/wIAAAAAAAAAAAD///3/AAAAAAAAAAD///7/AAAAAAAAAAD/////AAAAAAAAAAD//wAAAAAAAAAAAAD//wEAAAAAAAAAAAD//wIAAAAAAAAAAAAAAP7/AAAAAAAAAAAAAP//AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAIAAAAAAAAAAAABAP3/AAAAAAAAAAABAP7/AAAAAAAAAAABAP//AAAAAAAAAAABAAAAAAAAAAAAAAACAAAAAAAAAAAAAAACAP//AAAAAAAAAAACAP7/AAAAAAAAAAACAAIAAAAAAAAAAAADAAIAAAAAAAAAAAADAAEAAAAAAAAAAAADAP7/AAAAAAAAAAADAP3/AAAAAAAAAAAEAP7/AAAAAAAAAAAEAAAAAAAAAAAAAAAEAAEAAAAAAAAAAAAEAAIAAAAAAAAAAAAFAAIAAAAAAAAAAAAFAAEAAAAAAAAAAAAFAAAAAAAAAAAAAAAFAP//AAAAAAAAAAAFAP7/AAAAAAAAAAAFAP3/AAAAAAAAAAAEAP3/AAAAAAAAAAACAP3/AAAAAAAAAAAAAP3/AAAAAAAAAAD+//3/AAAAAAAAAAD+/wMAAAAAAAAAAAAAAAMAAAAAAAAAAAACAAMAAAAAAAAAAAAEAAMAAAAAAAAAAAAGAAIAAAAAAAAAAAAGAAEAAAAAAAAAAAAGAAAAAAAAAAAAAAAGAP//AAAAAAAAAAAGAP7/AAAAAAAAAAAGAP3/AAAAAAAAAAAGAAMAAAAAAAAAAAAEAP//AAAAAAAAAAADAP//AAAAAAAAAAADAAAAAAAAAAAAAAACAAEAAAAAAAAAAAABAAEAAAAAAAAAAAABAAIAAAAAAAAAAAD9//z/AAAAAAAAAAD///z/AAAAAAAAAAABAPz/AAAAAAAAAAADAPz/AAAAAAAAAAAFAPz/AAAAAAAAAAD8//3/AAAAAAAAAAD8//7/AAAAAAAAAAD8////AAAAAAAAAAD8/wAAAAAAAAAAAAD8/wEAAAAAAAAAAAD8/wIAAAAAAAAAAAD8/wMAAAAAAAAAAAA=")
+tile_set = ExtResource("2_r0du0")
+
+[node name="Hover" type="TileMapLayer" parent="Canvas"]
+tile_set = SubResource("TileSet_fos0i")
+script = ExtResource("5_fos0i")
+mainLayerPath = NodePath("../MainLayer")
+
+[node name="Pallette" type="Node2D" parent="."]
+
+[node name="PalletteLayer" type="TileMapLayer" parent="Pallette"]
+tile_map_data = PackedByteArray("AAD5//z/AAAAAAAAAAD6//3/AAABAAAAAAD5//7/AAAAAAEAAAD6////AAABAAEAAAA=")
+tile_set = ExtResource("2_r0du0")
+script = ExtResource("4_cm0pq")
+canvasLayerPath = NodePath("../../Canvas/MainLayer")
+
+[node name="Hover" type="TileMapLayer" parent="Pallette"]
+tile_set = SubResource("TileSet_fos0i")
+script = ExtResource("5_fos0i")
+mainLayerPath = NodePath("../PalletteLayer")

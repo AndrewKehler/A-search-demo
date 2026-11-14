@@ -7,10 +7,17 @@ public partial class TilesPallette : TileMapLayer
 	[Export] private NodePath canvasLayerPath;
 	private TileMapLayer canvasLayer;
 	private Vector2I selectedCell;
+	private Vector2I BASETILE = new Vector2I(0,0);
+	private Vector2I WALLTILE = new Vector2I(1,0);
+	private Vector2I STARTTILE = new Vector2I(0,1);
+	private Vector2I ENDTILE = new Vector2I(1,1);
+
+	[Signal]
+	public delegate void StartSearchEventHandler(Vector2I startPos, Vector2I endPos);
 	public override void _Ready()
 	{
 		canvasLayer = GetNode<TileMapLayer>(canvasLayerPath);
-		selectedCell = new Vector2I(0,0);
+		selectedCell = BASETILE;
 	}
 
 	public override void _Input(InputEvent @event)
@@ -30,7 +37,7 @@ public partial class TilesPallette : TileMapLayer
 					Vector2I hoveredCell = canvasLayer.GetCellAtlasCoords(cellPos);
 					GD.Print(hoveredCell);
 
-					if(selectedCell != new Vector2I(0,1) && selectedCell != new Vector2I(1,1)){
+					if(selectedCell != STARTTILE && selectedCell != ENDTILE){
 						switch(hoveredCell){
 							case Vector2I(0,1):
 								Globals.startSet = false;
@@ -38,30 +45,37 @@ public partial class TilesPallette : TileMapLayer
 								break;
 							case Vector2I(1,1):
 								Globals.endSet = false;
+								Globals.endPos = new Vector2I(-1,-1);
 								break;
 						}
 						canvasLayer.SetCell(cellPos, 0, selectedCell);
-					}else if(selectedCell == new Vector2I(0,1) && !Globals.startSet)
+					}else if(selectedCell == STARTTILE && !Globals.startSet)
 					{	
-						if(hoveredCell == new Vector2I(1, 1))
+						if(hoveredCell == ENDTILE)
 						{
 							Globals.endSet = false;
+							Globals.endPos = new Vector2I(-1,-1);
 						}
 						canvasLayer.SetCell(cellPos, 0, selectedCell);
 						Globals.startSet = true;
-						Globals.startPos = cellPos;
-					}else if(selectedCell == new Vector2I(1,1) && !Globals.endSet)
+						Globals.startPos = MapToLocal(cellPos);
+					}else if(selectedCell == ENDTILE && !Globals.endSet)
 					{
-						if(hoveredCell == new Vector2I(0, 1))
+						if(hoveredCell == STARTTILE)
 						{
 							Globals.startSet = false;
 							Globals.startPos = new Vector2I(-1,-1);
 						}
 						canvasLayer.SetCell(cellPos, 0, selectedCell);
 						Globals.endSet = true;
+						Globals.endPos = MapToLocal(cellPos);
 					}
 
 					
+				}
+				if(Globals.startSet && Globals.endSet)
+				{
+					EmitSignal(SignalName.StartSearch, Globals.startPos, Globals.endPos);
 				}
 
 			}

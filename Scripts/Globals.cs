@@ -14,7 +14,7 @@ public partial class Globals : Node
     public static int STARTT = 3;
     public static int ENDT = 4;
 
-    public static (string, Vector2I, float)[] tilesDic = [
+    public static (string, Vector2I, int)[] tilesDic = [
         ("voidTile",new Vector2I(-1, -1), 0),
         ("baseTile",new Vector2I(0,0), 1),
         ("wallTile",new Vector2I(1,0), 100), 
@@ -23,9 +23,9 @@ public partial class Globals : Node
     ];
 
 
-    public float getWeight(Vector2I atlas)
+    public static int getWeight(Vector2I atlas)
     {   
-        float weight = 1;
+        int weight = 1;
         for(int i =0; i< tilesDic.Length; i++)
         {
             if(atlas == tilesDic[i].Item2)

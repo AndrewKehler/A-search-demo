@@ -9,9 +9,10 @@ public partial class Searcher : Line2D
 	private TilesPallette palletteLayer;
 	private TileMapLayer canvasLayer;
 	// private (Vector2I, double)[] curAdj = new (Vector2I, double)[6];
-	private Queue<Vector2I> toVisit = new Queue<Vector2I>();
-	private (TileTuple[], int) curMinPath;
-	private TileTuple[] path = new TileTuple[256];
+	private Stack<Vector2I> toVisit = new Stack<Vector2I>();
+	private PathTuple curMinPath;
+	// private TileTuple[] path = new TileTuple[256];
+	
 
 	public override void _Ready()
 	{   
@@ -26,7 +27,7 @@ public partial class Searcher : Line2D
 	{
 		bool foundEnd = false;
 	
-		createPath(startPos, endPos);
+		createPath(startPos, endPos, new PathTuple([], 0));
 		// while (!foundEnd){
 			
 		// }
@@ -35,36 +36,38 @@ public partial class Searcher : Line2D
 		
 	}
 
-	private TileTuple[] createPath(Vector2I curTile, Vector2I endPos)
+	private PathTuple createPath(Vector2I curTile, Vector2I endPos, PathTuple curPath)
 	{
-		(Vector2I, double)[] curAdj = new (Vector2I, double)[6];
-		curAdj[0] = (new Vector2I(curTile.X, curTile.Y+1), Globals.evalH(new Vector2I(curTile.X, curTile.Y+1), endPos));
-		curAdj[1] = (new Vector2I(curTile.X, curTile.Y-1), Globals.evalH(new Vector2I(curTile.X, curTile.Y-1), endPos));
-		curAdj[2] = (new Vector2I(curTile.X+1, curTile.Y), Globals.evalH(new Vector2I(curTile.X+1, curTile.Y), endPos));
-		curAdj[3] = (new Vector2I(curTile.X-1, curTile.Y), Globals.evalH(new Vector2I(curTile.X-1, curTile.Y), endPos));
+		curPath.path[curPath.path.Length] = curTile;
+		curPath.cost += Globals.getWeight(canvasLayer.GetCellAtlasCoords(curTile));
+
+		TileTuple[] curAdj = new TileTuple[6];
+		curAdj[0] = new TileTuple(new Vector2I(curTile.X, curTile.Y+1), Globals.evalH(new Vector2I(curTile.X, curTile.Y+1), endPos));
+		curAdj[1] = new TileTuple(new Vector2I(curTile.X, curTile.Y-1), Globals.evalH(new Vector2I(curTile.X, curTile.Y-1), endPos));
+		curAdj[2] = new TileTuple(new Vector2I(curTile.X+1, curTile.Y), Globals.evalH(new Vector2I(curTile.X+1, curTile.Y), endPos));
+		curAdj[3] = new TileTuple(new Vector2I(curTile.X-1, curTile.Y), Globals.evalH(new Vector2I(curTile.X-1, curTile.Y), endPos));
 		if(curTile.X%2 == 0)
 		{
-			curAdj[4] = (new Vector2I(curTile.X-1, curTile.Y-1), Globals.evalH(new Vector2I(curTile.X-1, curTile.Y-1), endPos));
-			curAdj[5] = (new Vector2I(curTile.X+1, curTile.Y-1), Globals.evalH(new Vector2I(curTile.X+1, curTile.Y-1), endPos));
+			curAdj[4] = new TileTuple(new Vector2I(curTile.X-1, curTile.Y-1), Globals.evalH(new Vector2I(curTile.X-1, curTile.Y-1), endPos));;
+			curAdj[5] = new TileTuple(new Vector2I(curTile.X+1, curTile.Y-1), Globals.evalH(new Vector2I(curTile.X+1, curTile.Y-1), endPos));
 		}
 		else
 		{
-			curAdj[4] = (new Vector2I(curTile.X-1, curTile.Y+1), Globals.evalH(new Vector2I(curTile.X-1, curTile.Y-1), endPos));
-			curAdj[5] = (new Vector2I(curTile.X+1, curTile.Y+1), Globals.evalH(new Vector2I(curTile.X+1, curTile.Y-1), endPos));
+			curAdj[4] = new TileTuple(new Vector2I(curTile.X-1, curTile.Y+1), Globals.evalH(new Vector2I(curTile.X-1, curTile.Y+1), endPos));
+			curAdj[5] = new TileTuple(new Vector2I(curTile.X+1, curTile.Y+1), Globals.evalH(new Vector2I(curTile.X+1, curTile.Y+1), endPos));
 		}
 		
 		
-		Array.Sort(curAdj, (x, y) => x.Item2.CompareTo(y.Item2));
-		for(int i=0; i<6; i++)
-		{
-			if(canvasLayer.GetCellAtlasCoords(curAdj[i].Item1) != new Vector2I(-1, -1))
+		Array.Sort(curAdj, (x, y) => x.heuristic.CompareTo(y.heuristic));
+		for(int i=5; i>-1; i--)
+		{	
+			if(canvasLayer.GetCellAtlasCoords(curAdj[i].coords) == )
+			if(canvasLayer.GetCellAtlasCoords(curAdj[i].coords) != new Vector2I(-1, -1))
 			{
-				toVisit.Enqueue(curAdj[i].Item1);
-				GD.Print(curAdj[i]);
+				toVisit.Push(curAdj[i].coords);
 			}
 			
 		}
-
 		return null;
 	}
 }

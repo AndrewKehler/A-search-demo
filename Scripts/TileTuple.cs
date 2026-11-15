@@ -3,11 +3,11 @@ using System;
 
 public partial class TileTuple : Node
 {
-    public Vector2I atlas;
-    public int weight;
-    public TileTuple(Vector2I coords, int w)
+    public Vector2I coords;
+    public double heuristic;
+    public TileTuple(Vector2I c, double h)
     {
-        atlas = coords;
-        weight = w;
+        coords = c;
+        heuristic = h;
     }
 }

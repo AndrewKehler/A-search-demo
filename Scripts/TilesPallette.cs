@@ -58,7 +58,7 @@ public partial class TilesPallette : TileMapLayer
 						}
 						canvasLayer.SetCell(cellPos, 0, selectedCell);
 						Globals.startSet = true;
-						Globals.startPos = MapToLocal(cellPos);
+						Globals.startPos = cellPos;
 					}else if(selectedCell == ENDTILE && !Globals.endSet)
 					{
 						if(hoveredCell == STARTTILE)
@@ -68,7 +68,7 @@ public partial class TilesPallette : TileMapLayer
 						}
 						canvasLayer.SetCell(cellPos, 0, selectedCell);
 						Globals.endSet = true;
-						Globals.endPos = MapToLocal(cellPos);
+						Globals.endPos =cellPos;
 					}
 
 					

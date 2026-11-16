@@ -32,7 +32,7 @@ public partial class Searcher : Line2D
 		path = findPath(startTile, endPos, new PathTuple(new List<TileTuple>(), 0));
 		for(int i=0; i < path.path.Count; i++)
 		{
-			this.AddPoint(canvasLayer.LocalToMap(path.path[i].coords));
+			this.AddPoint(canvasLayer.MapToLocal(path.path[i].coords));
 		}
 	}
 
@@ -117,7 +117,7 @@ public partial class Searcher : Line2D
 		//Starts with lowest heuristic value.
 		for(int i=5; i>-1; i--)
 		{	
-			if(canvasLayer.GetCellAtlasCoords(curAdj[i].coords) != Globals.VOIDTILE || !curPath.path.Contains(curAdj[i]))
+			if(canvasLayer.GetCellAtlasCoords(curAdj[i].coords) != Globals.VOIDTILE && !containsCoords(curPath, curAdj[i].coords))
 			{
 				toVisit.Push(curAdj[i]);
 				curTile.checkedAdj++;
@@ -155,5 +155,17 @@ public partial class Searcher : Line2D
 
 		return adjacent;
 
+	}
+
+	private bool containsCoords(PathTuple path, Vector2I key)
+	{	
+		for(int i=0; i < path.path.Count; i++)
+		{
+			if(path.path[i].coords == key)
+			{
+				return true;
+			}
+		}
+		return false;
 	}
 }

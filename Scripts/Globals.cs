@@ -5,6 +5,7 @@ public partial class Globals : Node
 {
     public static bool startSet = false;
     public static bool endSet = false;
+    public static bool signalled = false;
     public static Vector2I startPos = new Vector2I(-1, -1);
     public static Vector2I endPos = new Vector2I(-1,-1);
 

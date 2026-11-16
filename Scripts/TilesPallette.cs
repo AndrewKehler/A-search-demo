@@ -73,9 +73,10 @@ public partial class TilesPallette : TileMapLayer
 
 					
 				}
-				if(Globals.startSet && Globals.endSet)
+				if(Globals.startSet && Globals.endSet && !Globals.signalled)
 				{
 					EmitSignal(SignalName.StartSearch, Globals.startPos, Globals.endPos);
+					Globals.signalled = true;
 				}
 
 			}

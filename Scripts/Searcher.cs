@@ -16,6 +16,7 @@ public partial class Searcher : Line2D
 
 	public override void _Ready()
 	{   
+		this.Points = [];
 		canvasLayer = GetNode<TileMapLayer>(canvasPath);
 		palletteLayer = GetNode<TilesPallette>(palettePath);
 		palletteLayer.StartSearch += StartSearch;
@@ -24,16 +25,15 @@ public partial class Searcher : Line2D
 
 
 	private void StartSearch(Vector2I startPos, Vector2I endPos)
-	{
-		// bool foundEnd = false;
+	{	
+		GD.Print("started!");
+		PathTuple path;
 		TileTuple startTile = new TileTuple(startPos, 0, 0);
-		findPath(startTile, endPos, new PathTuple(new List<TileTuple>(), 0));
-		// while (!foundEnd){
-			
-		// }
-		
-		
-		
+		path = findPath(startTile, endPos, new PathTuple(new List<TileTuple>(), 0));
+		for(int i=0; i < path.path.Count; i++)
+		{
+			this.AddPoint(canvasLayer.LocalToMap(path.path[i].coords));
+		}
 	}
 
 	//this currently needs a system in place to check whether all of a tiles adjacent tiles have been checked on the current path order...
@@ -99,8 +99,12 @@ public partial class Searcher : Line2D
 			{
 				curPath.path[curPath.path.Count - 1].checkedAdj--;
 			}
-			
-			return findPath(toVisit.Pop(), endPos, curPath);
+			if(toVisit.Count > 0)
+			{
+				return findPath(toVisit.Pop(), endPos, curPath);
+			}else{
+				return curMinPath;
+			}
 		}
 
 
@@ -123,6 +127,7 @@ public partial class Searcher : Line2D
 		//add current tile to path along with its travel cost
 		curPath.cost += curTileWeight;
 		curPath.path.Add(curTile);
+		// GD.Print(curPath.path[curPath.path.Count - 1].coords);
 		return findPath(toVisit.Pop(), endPos, curPath);
 	}
 
@@ -152,4 +157,3 @@ public partial class Searcher : Line2D
 
 	}
 }
-

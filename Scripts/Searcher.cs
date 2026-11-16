@@ -30,10 +30,12 @@ public partial class Searcher : Line2D
 		PathTuple path;
 		TileTuple startTile = new TileTuple(startPos, 0, 0);
 		path = findPath(startTile, endPos, new PathTuple(new List<TileTuple>(), 0));
-		for(int i=0; i < path.path.Count; i++)
+		for(int i=0; i<path.path.Count; i++)
 		{
 			this.AddPoint(canvasLayer.MapToLocal(path.path[i].coords));
+			GD.Print(path.path[i].coords, ", ", canvasLayer.MapToLocal(path.path[i].coords));
 		}
+
 	}
 
 	//this currently needs a system in place to check whether all of a tiles adjacent tiles have been checked on the current path order...
@@ -41,6 +43,14 @@ public partial class Searcher : Line2D
 	{	
 		//get the travel weight of our tile.
 		int curTileWeight = Globals.getWeight(canvasLayer.GetCellAtlasCoords(curTile.coords));
+		
+		//update cost of current path each pass.
+		int totalCost = 0;
+		for(int i=0; i < curPath.path.Count; i++)
+		{
+			totalCost +=  Globals.getWeight(canvasLayer.GetCellAtlasCoords(curPath.path[i].coords));
+		}
+		curPath.cost = totalCost;
 
 	//(BASE CASE): 
 		// if we are on the end tile:
@@ -57,8 +67,8 @@ public partial class Searcher : Line2D
 				curPath.path[curPath.path.Count - 1].checkedAdj--;
 				return findPath(toVisit.Pop(), endPos, curPath);
 			}
-			//the old path is better than our current one
-			else if(curMinPath.cost < curPath.cost)
+			//the old path is better or equal to our current one
+			else if(curMinPath.cost <= curPath.cost)
 			{
 				//if theres more places to go
 				if(toVisit.Count > 0)
@@ -125,9 +135,11 @@ public partial class Searcher : Line2D
 		}
 
 		//add current tile to path along with its travel cost
-		curPath.cost += curTileWeight;
+
+		curPath.cost = curTileWeight;
 		curPath.path.Add(curTile);
 		// GD.Print(curPath.path[curPath.path.Count - 1].coords);
+		// curPath.path[curPath.path.Count - 1].checkedAdj--;
 		return findPath(toVisit.Pop(), endPos, curPath);
 	}
 

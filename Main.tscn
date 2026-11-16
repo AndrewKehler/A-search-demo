@@ -64,7 +64,6 @@ script = ExtResource("5_fos0i")
 mainLayerPath = NodePath("../MainLayer")
 
 [node name="Line2D" type="Line2D" parent="Canvas"]
-closed = true
 width = 14.49
 default_color = Color(0, 0, 0, 1)
 sharp_limit = 3.35

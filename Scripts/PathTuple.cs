@@ -4,9 +4,9 @@ using System.Collections.Generic;
 
 public partial class PathTuple : Node
 {
-    public List<Vector2I> path;
+    public List<TileTuple> path;
     public int cost;
-    public PathTuple(List<Vector2I> tiles, int c)
+    public PathTuple(List<TileTuple> tiles, int c)
     {
         path = tiles;
         cost = c;

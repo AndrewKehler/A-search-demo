@@ -9,8 +9,8 @@ public partial class Searcher : Line2D
 	private TilesPallette palletteLayer;
 	private TileMapLayer canvasLayer;
 	// private (Vector2I, double)[] curAdj = new (Vector2I, double)[6];
-	private Stack<Vector2I> toVisit = new Stack<Vector2I>();
-	private PathTuple curMinPath = new PathTuple(new List<Vector2I>(), -1);
+	private Stack<TileTuple> toVisit = new Stack<TileTuple>();
+	private PathTuple curMinPath = new PathTuple(new List<TileTuple>(), -1);
 	// private TileTuple[] path = new TileTuple[256];
 	
 
@@ -25,12 +25,9 @@ public partial class Searcher : Line2D
 
 	private void StartSearch(Vector2I startPos, Vector2I endPos)
 	{
-		bool foundEnd = false;
-		// while (toVisit.Count > 0)
-		// {
-			
-		// }
-		findPath(startPos, endPos, new PathTuple(new List<Vector2I>(), 0));
+		// bool foundEnd = false;
+		TileTuple startTile = new TileTuple(startPos, 0, 0);
+		findPath(startTile, endPos, new PathTuple(new List<TileTuple>(), 0));
 		// while (!foundEnd){
 			
 		// }
@@ -39,22 +36,25 @@ public partial class Searcher : Line2D
 		
 	}
 
-	private PathTuple findPath(Vector2I curTile, Vector2I endPos, PathTuple curPath)
+	//this currently needs a system in place to check whether all of a tiles adjacent tiles have been checked on the current path order...
+	private PathTuple findPath(TileTuple curTile, Vector2I endPos, PathTuple curPath)
 	{	
 		//get the travel weight of our tile.
-		int curTileWeight = Globals.getWeight(canvasLayer.GetCellAtlasCoords(curTile));
+		int curTileWeight = Globals.getWeight(canvasLayer.GetCellAtlasCoords(curTile.coords));
 
-		//(BASE CASE) if we are on the end tile:
-		if(canvasLayer.GetCellAtlasCoords(curTile) == Globals.ENDTILE)
+	//(BASE CASE): 
+		// if we are on the end tile:
+		if(canvasLayer.GetCellAtlasCoords(curTile.coords) == Globals.ENDTILE)
 		{	
 			//and there is no current minimum path, 
 			// or the old path is worse than our current one and there is more to visit:
 			if(curMinPath.cost == -1 || (curMinPath.cost > curPath.cost && toVisit.Count > 0))
 			{
 				//copy the curPath to the curMinPath, then add the end tile to the end of the min path
-				curMinPath = new PathTuple(new List<Vector2I>(curPath.path), curPath.cost);
+				curMinPath = new PathTuple(new List<TileTuple>(curPath.path), curPath.cost);
 				curMinPath.path.Add(curTile);
 				//Go to a previous adjacent tile to continue to check all possible paths
+				curPath.path[curPath.path.Count - 1].checkedAdj--;
 				return findPath(toVisit.Pop(), endPos, curPath);
 			}
 			//the old path is better than our current one
@@ -64,6 +64,7 @@ public partial class Searcher : Line2D
 				if(toVisit.Count > 0)
 				{
 					//dont update the path and go back to a new adjacent tile
+					curPath.path[0].checkedAdj--;
 					return findPath(toVisit.Pop(), endPos, curPath);
 				}
 				// if there isnt any places to go
@@ -77,39 +78,52 @@ public partial class Searcher : Line2D
 			else
 			{
 				//copy the curPath to the curMinPath, then add the end tile to the end of the min path
-				curMinPath = new PathTuple(new List<Vector2I>(curPath.path), curPath.cost);
+				curMinPath = new PathTuple(new List<TileTuple>(curPath.path), curPath.cost);
 				curMinPath.path.Add(curTile);
 				//give us the minimum path
 				return curMinPath;
 			}
 			
 		}
-
 		//If we've moved to a tile, a minimum path exists, and our path cost will be greater after travelling to this tile:
 		else if(curMinPath.cost != -1 && curPath.cost + curTileWeight > curMinPath.cost)
 		{
-			// We ignore it and go to a different adjacent tile instead.
-			findPath(toVisit.Pop(), endPos, curPath);
+			//check if all adjacent tiles have been checked for the head of the path
+			if(curPath.path[curPath.path.Count - 1].checkedAdj -1 <= 0)
+			{	
+				//if so, remove that tile from the current path and update the weight of the current path
+				curPath.cost -= Globals.getWeight(curPath.path[curPath.path.Count - 1].coords);
+				curPath.path.RemoveAt(curPath.path.Count - 1);
+			}
+			else
+			{
+				curPath.path[curPath.path.Count - 1].checkedAdj--;
+			}
+			
+			return findPath(toVisit.Pop(), endPos, curPath);
 		}
 
 
-		//add current tile to path along with its travel cost
-		curPath.path.Add(curTile);
-		curPath.cost += Globals.getWeight(canvasLayer.GetCellAtlasCoords(curTile));
+		
 		
 		//call helper to check adjacent tiles of current tile.
-		TileTuple[] curAdj = checkAdjacent(curTile, endPos);
+		TileTuple[] curAdj = checkAdjacent(curTile.coords, endPos);
 
-		//iterate backwards pushing each adjacent tile to a stack ignoring non-existent tiles.
+		//iterate backwards pushing each adjacent tile to a stack ignoring non-existent tiles, or already traversed tiles.
 		//Starts with lowest heuristic value.
 		for(int i=5; i>-1; i--)
 		{	
-			if(canvasLayer.GetCellAtlasCoords(curAdj[i].coords) != Globals.VOIDTILE)
+			if(canvasLayer.GetCellAtlasCoords(curAdj[i].coords) != Globals.VOIDTILE || !curPath.path.Contains(curAdj[i]))
 			{
-				toVisit.Push(curAdj[i].coords);
+				toVisit.Push(curAdj[i]);
+				curTile.checkedAdj++;
 			}
 		}
-		return null;
+
+		//add current tile to path along with its travel cost
+		curPath.cost += curTileWeight;
+		curPath.path.Add(curTile);
+		return findPath(toVisit.Pop(), endPos, curPath);
 	}
 
 	// Checks each adjacent tile to the current tile and calculates its heuristic value. 
@@ -117,19 +131,19 @@ public partial class Searcher : Line2D
 	private TileTuple[] checkAdjacent(Vector2I curTile, Vector2I endPos)
 	{
 		TileTuple[] adjacent = new TileTuple[6];
-		adjacent[0] = new TileTuple(new Vector2I(curTile.X, curTile.Y+1), Globals.evalH(new Vector2I(curTile.X, curTile.Y+1), endPos));
-		adjacent[1] = new TileTuple(new Vector2I(curTile.X, curTile.Y-1), Globals.evalH(new Vector2I(curTile.X, curTile.Y-1), endPos));
-		adjacent[2] = new TileTuple(new Vector2I(curTile.X+1, curTile.Y), Globals.evalH(new Vector2I(curTile.X+1, curTile.Y), endPos));
-		adjacent[3] = new TileTuple(new Vector2I(curTile.X-1, curTile.Y), Globals.evalH(new Vector2I(curTile.X-1, curTile.Y), endPos));
+		adjacent[0] = new TileTuple(new Vector2I(curTile.X, curTile.Y+1), Globals.evalH(new Vector2I(curTile.X, curTile.Y+1), endPos), 0);
+		adjacent[1] = new TileTuple(new Vector2I(curTile.X, curTile.Y-1), Globals.evalH(new Vector2I(curTile.X, curTile.Y-1), endPos), 0);
+		adjacent[2] = new TileTuple(new Vector2I(curTile.X+1, curTile.Y), Globals.evalH(new Vector2I(curTile.X+1, curTile.Y), endPos), 0);
+		adjacent[3] = new TileTuple(new Vector2I(curTile.X-1, curTile.Y), Globals.evalH(new Vector2I(curTile.X-1, curTile.Y), endPos), 0);
 		if(curTile.X%2 == 0)
 		{
-			adjacent[4] = new TileTuple(new Vector2I(curTile.X-1, curTile.Y-1), Globals.evalH(new Vector2I(curTile.X-1, curTile.Y-1), endPos));;
-			adjacent[5] = new TileTuple(new Vector2I(curTile.X+1, curTile.Y-1), Globals.evalH(new Vector2I(curTile.X+1, curTile.Y-1), endPos));
+			adjacent[4] = new TileTuple(new Vector2I(curTile.X-1, curTile.Y-1), Globals.evalH(new Vector2I(curTile.X-1, curTile.Y-1), endPos), 0);;
+			adjacent[5] = new TileTuple(new Vector2I(curTile.X+1, curTile.Y-1), Globals.evalH(new Vector2I(curTile.X+1, curTile.Y-1), endPos), 0);
 		}
 		else
 		{
-			adjacent[4] = new TileTuple(new Vector2I(curTile.X-1, curTile.Y+1), Globals.evalH(new Vector2I(curTile.X-1, curTile.Y+1), endPos));
-			adjacent[5] = new TileTuple(new Vector2I(curTile.X+1, curTile.Y+1), Globals.evalH(new Vector2I(curTile.X+1, curTile.Y+1), endPos));
+			adjacent[4] = new TileTuple(new Vector2I(curTile.X-1, curTile.Y+1), Globals.evalH(new Vector2I(curTile.X-1, curTile.Y+1), endPos), 0);
+			adjacent[5] = new TileTuple(new Vector2I(curTile.X+1, curTile.Y+1), Globals.evalH(new Vector2I(curTile.X+1, curTile.Y+1), endPos), 0);
 		}
 		//sort by lowest to highest heuristic value
 		Array.Sort(adjacent, (x, y) => x.heuristic.CompareTo(y.heuristic));

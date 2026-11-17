@@ -16,24 +16,30 @@ public partial class Searcher : Line2D
 
 	public override void _Ready()
 	{   
-		this.Points = [];
+		this.ClearPoints();
 		canvasLayer = GetNode<TileMapLayer>(canvasPath);
 		palletteLayer = GetNode<TilesPallette>(palettePath);
 		palletteLayer.StartSearch += StartSearch;
+		palletteLayer.GoalsRemoved += GoalsRemoved;
 
 	}
 
+	private void GoalsRemoved()
+	{
+		this.ClearPoints();
+	}
 
 	private void StartSearch(Vector2I startPos, Vector2I endPos)
 	{	
 		GD.Print("started!");
+		this.ClearPoints();
+
 		PathTuple path;
 		TileTuple startTile = new TileTuple(startPos, 0, 0);
 		path = findPath(startTile, endPos, new PathTuple(new List<TileTuple>(), 0));
 		for(int i=0; i<path.path.Count; i++)
 		{
 			this.AddPoint(canvasLayer.MapToLocal(path.path[i].coords));
-			GD.Print(path.path[i].coords, ", ", canvasLayer.MapToLocal(path.path[i].coords));
 		}
 
 	}

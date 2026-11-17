@@ -12,8 +12,14 @@ public partial class TilesPallette : TileMapLayer
 	private Vector2I STARTTILE = new Vector2I(0,1);
 	private Vector2I ENDTILE = new Vector2I(1,1);
 
+	private Vector2I curEndPos;
+	
+	private Vector2I curStartPos;
+
 	[Signal]
 	public delegate void StartSearchEventHandler(Vector2I startPos, Vector2I endPos);
+	[Signal]
+	public delegate void GoalsRemovedEventHandler();
 	public override void _Ready()
 	{
 		canvasLayer = GetNode<TileMapLayer>(canvasLayerPath);
@@ -42,41 +48,59 @@ public partial class TilesPallette : TileMapLayer
 							case Vector2I(0,1):
 								Globals.startSet = false;
 								Globals.startPos = new Vector2I(-1,-1);
+								EmitSignal(SignalName.GoalsRemoved);
+								
 								break;
 							case Vector2I(1,1):
 								Globals.endSet = false;
 								Globals.endPos = new Vector2I(-1,-1);
+								EmitSignal(SignalName.GoalsRemoved);
+
 								break;
 						}
 						canvasLayer.SetCell(cellPos, 0, selectedCell);
-					}else if(selectedCell == STARTTILE && !Globals.startSet)
+					}else if(selectedCell == STARTTILE)
 					{	
 						if(hoveredCell == ENDTILE)
 						{
 							Globals.endSet = false;
 							Globals.endPos = new Vector2I(-1,-1);
+							EmitSignal(SignalName.GoalsRemoved);
+						}
+						if (Globals.startSet)
+						{
+							canvasLayer.SetCell(Globals.startPos, 0, BASETILE);
 						}
 						canvasLayer.SetCell(cellPos, 0, selectedCell);
 						Globals.startSet = true;
 						Globals.startPos = cellPos;
-					}else if(selectedCell == ENDTILE && !Globals.endSet)
+						if(Globals.startSet && Globals.endSet)
+						{
+							EmitSignal(SignalName.StartSearch, Globals.startPos, Globals.endPos);
+						}
+					}
+					else if(selectedCell == ENDTILE)
 					{
 						if(hoveredCell == STARTTILE)
 						{
 							Globals.startSet = false;
 							Globals.startPos = new Vector2I(-1,-1);
+							EmitSignal(SignalName.GoalsRemoved);
+						}
+						if (Globals.endSet)
+						{
+							canvasLayer.SetCell(Globals.endPos, 0, BASETILE);
 						}
 						canvasLayer.SetCell(cellPos, 0, selectedCell);
 						Globals.endSet = true;
 						Globals.endPos =cellPos;
+						if(Globals.startSet && Globals.endSet)
+						{
+							EmitSignal(SignalName.StartSearch, Globals.startPos, Globals.endPos);
+						}
 					}
 
 					
-				}
-				if(Globals.startSet && Globals.endSet && !Globals.signalled)
-				{
-					EmitSignal(SignalName.StartSearch, Globals.startPos, Globals.endPos);
-					Globals.signalled = true;
 				}
 
 			}

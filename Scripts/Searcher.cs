@@ -27,6 +27,7 @@ public partial class Searcher : Line2D
 	private void GoalsRemoved()
 	{
 		this.ClearPoints();
+		curMinPath = new PathTuple(new List<TileTuple>(), -1);
 	}
 
 	private void StartSearch(Vector2I startPos, Vector2I endPos)
@@ -41,6 +42,7 @@ public partial class Searcher : Line2D
 		{
 			this.AddPoint(canvasLayer.MapToLocal(path.path[i].coords));
 		}
+		curMinPath = new PathTuple(new List<TileTuple>(), -1);
 
 	}
 

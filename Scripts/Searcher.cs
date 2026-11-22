@@ -50,12 +50,12 @@ public partial class Searcher : Line2D
 		//get the travel weight of our tile.
 		int curTileWeight = Globals.getWeight(canvasLayer.GetCellAtlasCoords(curTile.coords));
 		//update cost of current path each pass.
-			// int totalCost = 0;
-			// for(int i=0; i < curPath.path.Count; i++)
-			// {
-			// 	totalCost +=  Globals.getWeight(canvasLayer.GetCellAtlasCoords(curPath.path[i].coords));
-			// }
-			// curPath.cost = totalCost;
+		// int totalCost = 0;
+		// for(int i=0; i < curPath.path.Count; i++)
+		// {
+		// 	totalCost +=  Globals.getWeight(canvasLayer.GetCellAtlasCoords(curPath.path[i].coords));
+		// }
+		// curPath.cost = totalCost;
 		//possibly redundant
 
 		//Base case
@@ -66,6 +66,7 @@ public partial class Searcher : Line2D
 			{
 				curMinPath = new PathTuple(new List<TileTuple>(curPath.path), curPath.cost);
 				curMinPath.path.Add(curTile);
+				curPath.path[curPath.path.Count-1].checkedAdj--;
 				return findPath2(toVisit.Pop(), endPos, curPath); //Check a new adjacent
 			}
 			//no more places to visit
@@ -96,15 +97,17 @@ public partial class Searcher : Line2D
 		//going to this tile makes our path worse
 		if(curMinPath.cost != -1 && curPath.cost+curTileWeight >= curMinPath.cost) 
 		{
-			curPath.path[curPath.path.Count - 1].checkedAdj--; //mark this adjacent tile as checked
 			if(curPath.path[curPath.path.Count - 1].checkedAdj <= 0)
 			{
+				curPath.cost -= Globals.getWeight(canvasLayer.GetCellAtlasCoords(curPath.path[curPath.path.Count - 1].coords));
 				curPath.path.RemoveAt(curPath.path.Count - 1);
+				
 			} //remove current head if all adjacent tiles are checked
-			if(curPath.path.Count <= 0)
+			if(curPath.path.Count <= 0 || toVisit.Count == 0)
 			{
 				return curMinPath;
 			}
+			curPath.path[curPath.path.Count - 1].checkedAdj--; //mark this adjacent tile as checked
 			return findPath2(toVisit.Pop(), endPos, curPath); //go to a new adjacent tile
 		}
 		//no minimum exists or going here does not make our path worse
